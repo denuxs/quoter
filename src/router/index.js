@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import HomeView from '../views/HomeView.vue'
 import QuoterView from '../views/QuoterView.vue'
 
 const router = createRouter({
@@ -10,14 +9,41 @@ const router = createRouter({
       name: 'quoter',
       component: QuoterView,
     },
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/AboutView.vue'),
-    // },
+    {
+      path: '/clientes',
+      name: 'clientes',
+      component: () => import('../views/ClientesView.vue'),
+    },
+    {
+      path: '/productos',
+      name: 'productos',
+      component: () => import('../views/ProductosListView.vue'),
+    },
+    {
+      path: '/productos/nuevo',
+      name: 'producto-create',
+      component: () => import('../views/ProductoCreateView.vue'),
+    },
+    {
+      path: '/productos/:id/editar',
+      name: 'producto-edit',
+      component: () => import('../views/ProductoEditView.vue'),
+    },
+    {
+      path: '/cotizaciones',
+      name: 'cotizaciones',
+      component: () => import('../views/CotizacionesListView.vue'),
+    },
+    {
+      path: '/cotizaciones/nueva',
+      name: 'cotizacion-create',
+      component: () => import('../views/CotizacionCreateView.vue'),
+    },
+    {
+      path: '/cotizaciones/:id/editar',
+      name: 'cotizacion-edit',
+      component: () => import('../views/CotizacionEditView.vue'),
+    },
   ],
 })
 

@@ -1,6 +1,4 @@
 <script setup>
-import { ref } from 'vue'
-const quote = ref('')
 </script>
 <template>
   <div class="container mx-auto">
