@@ -21,15 +21,13 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-2xl px-4 py-8">
+  <div class="container mx-auto px-4 py-8">
     <template v-if="cotizacion">
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Editar cotización</h1>
       </div>
 
-      <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <CotizacionForm :cotizacion="cotizacion" @submit="handleSubmit" @cancel="handleCancel" />
-      </div>
+      <CotizacionForm :cotizacion="cotizacion" @submit="handleSubmit" @cancel="handleCancel" />
     </template>
 
     <template v-else>

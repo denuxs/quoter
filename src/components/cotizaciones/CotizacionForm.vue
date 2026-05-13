@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch, computed } from 'vue'
+import { reactive, watch, computed, onMounted } from 'vue'
 import { estadosCotizacion } from '@/composables/useCotizacionesLocalStorage'
 import { useClientesLocalStorageOptions } from '@/composables/useClientesLocalStorageOptions'
 import { useProductosLocalStorage } from '@/composables/useProductosLocalStorage'
@@ -33,6 +33,7 @@ const form = reactive({
   fecha: hoy,
   clienteId: '',
   productoId: '',
+  productoEspecificaciones: {},
   estado: 'enviada',
 })
 
@@ -40,6 +41,24 @@ const errores = reactive({
   clienteId: '',
   productoId: '',
   estado: '',
+})
+
+const formValues = reactive({})
+
+let especificaciones = null
+if (props.cotizacion) {
+  especificaciones = props.cotizacion.productoEspecificaciones
+}
+
+const inicializarValores = () => {
+  if (!especificaciones) return
+  for (const [key, value] of Object.entries(especificaciones)) {
+    formValues[key] = value
+  }
+}
+
+onMounted(() => {
+  inicializarValores()
 })
 
 watch(
@@ -97,119 +116,143 @@ function handleSubmit() {
     clienteId: form.clienteId,
     productoId: form.productoId,
     estado: form.estado,
+    productoEspecificaciones: { ...formValues },
   })
 }
 </script>
 
 <template>
   <form class="space-y-4" @submit.prevent="handleSubmit">
-    <div class="flex gap-2">
-      <div class="flex-1">
-        <label class="mb-1 block text-sm font-medium text-gray-700" for="codigo">Código</label>
-        <input
-          id="codigo"
-          v-model="form.codigo"
-          type="text"
-          placeholder="Ej. COT-001"
+    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <label class="mb-1 block text-sm font-medium text-gray-700" for="codigo">Código</label>
+          <input
+            id="codigo"
+            v-model="form.codigo"
+            type="text"
+            placeholder="Ej. COT-001"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        <div class="flex-1">
+          <label class="mb-1 block text-sm font-medium text-gray-700" for="fecha">Fecha</label>
+          <input
+            id="fecha"
+            v-model="form.fecha"
+            type="date"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="clienteId">
+          Cliente <span class="text-red-500">*</span>
+        </label>
+        <select
+          id="clienteId"
+          v-model="form.clienteId"
           class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div class="flex-1">
-        <label class="mb-1 block text-sm font-medium text-gray-700" for="fecha">Fecha</label>
-        <input
-          id="fecha"
-          v-model="form.fecha"
-          type="date"
-          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-    </div>
-
-    <div>
-      <label class="mb-1 block text-sm font-medium text-gray-700" for="clienteId">
-        Cliente <span class="text-red-500">*</span>
-      </label>
-      <select
-        id="clienteId"
-        v-model="form.clienteId"
-        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        :class="{ 'border-red-500': errores.clienteId }"
-      >
-        <option value="">Selecciona un cliente</option>
-        <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
-          {{ cliente.nombre }}
-        </option>
-      </select>
-      <p v-if="errores.clienteId" class="mt-1 text-xs text-red-600">{{ errores.clienteId }}</p>
-      <p v-if="clientes.length === 0" class="mt-1 text-xs text-gray-500">
-        No hay clientes disponibles. Agrega clientes primero.
-      </p>
-    </div>
-
-    <div v-if="clienteSeleccionado" class="flex gap-2">
-      <div class="flex-1">
-        <label class="mb-1 block text-sm font-medium text-gray-500" for="moneda">Moneda</label>
-        <input
-          id="moneda"
-          :value="clienteSeleccionado.moneda ?? '—'"
-          type="text"
-          disabled
-          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
-        />
-      </div>
-      <div class="flex-1">
-        <label class="mb-1 block text-sm font-medium text-gray-500" for="certificacion"
-          >Certificación</label
+          :class="{ 'border-red-500': errores.clienteId }"
         >
-        <input
-          id="certificacion"
-          :value="clienteSeleccionado.certificacion ?? '—'"
-          type="text"
-          disabled
-          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
-        />
+          <option value="">Selecciona un cliente</option>
+          <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
+            {{ cliente.nombre }}
+          </option>
+        </select>
+        <p v-if="errores.clienteId" class="mt-1 text-xs text-red-600">{{ errores.clienteId }}</p>
+        <p v-if="clientes.length === 0" class="mt-1 text-xs text-gray-500">
+          No hay clientes disponibles. Agrega clientes primero.
+        </p>
+      </div>
+
+      <div v-if="clienteSeleccionado" class="flex gap-2">
+        <div class="flex-1">
+          <label class="mb-1 block text-sm font-medium text-gray-500" for="moneda">Moneda</label>
+          <input
+            id="moneda"
+            :value="clienteSeleccionado.moneda ?? '—'"
+            type="text"
+            disabled
+            class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
+          />
+        </div>
+        <div class="flex-1">
+          <label class="mb-1 block text-sm font-medium text-gray-500" for="certificacion"
+            >Certificación</label
+          >
+          <input
+            id="certificacion"
+            :value="clienteSeleccionado.certificacion ?? '—'"
+            type="text"
+            disabled
+            class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="estado">Estado</label>
+        <select
+          id="estado"
+          v-model="form.estado"
+          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          :class="{ 'border-red-500': errores.estado }"
+        >
+          <option v-for="op in estadosCotizacion" :key="op.value" :value="op.value">
+            {{ op.label }}
+          </option>
+        </select>
+        <p v-if="errores.estado" class="mt-1 text-xs text-red-600">{{ errores.estado }}</p>
       </div>
     </div>
 
-    <div>
-      <label class="mb-1 block text-sm font-medium text-gray-700" for="productoId">
-        Producto <span class="text-red-500">*</span>
-      </label>
-      <select
-        id="productoId"
-        v-model="form.productoId"
-        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        :class="{ 'border-red-500': errores.productoId }"
-      >
-        <option value="">Selecciona un producto</option>
-        <option v-for="producto in productos" :key="producto.id" :value="producto.id">
-          {{ producto.nombre }}
-        </option>
-      </select>
-      <p v-if="errores.productoId" class="mt-1 text-xs text-red-600">{{ errores.productoId }}</p>
-      <p v-if="productos.length === 0" class="mt-1 text-xs text-gray-500">
-        No hay productos disponibles. Agrega productos primero.
-      </p>
-    </div>
+    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="productoId">
+          Producto <span class="text-red-500">*</span>
+        </label>
+        <select
+          id="productoId"
+          v-model="form.productoId"
+          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          :class="{ 'border-red-500': errores.productoId }"
+        >
+          <option value="">Selecciona un producto</option>
+          <option v-for="producto in productos" :key="producto.id" :value="producto.id">
+            {{ producto.nombre }}
+          </option>
+        </select>
+        <p v-if="errores.productoId" class="mt-1 text-xs text-red-600">{{ errores.productoId }}</p>
+        <p v-if="productos.length === 0" class="mt-1 text-xs text-gray-500">
+          No hay productos disponibles. Agrega productos primero.
+        </p>
+      </div>
 
-    <div v-if="productoSeleccionado" class="flex gap-2">
-      {{ productoSeleccionado.especificaciones }}
-    </div>
+      <div v-if="productoSeleccionado" class="flex gap-2">
+        <div
+          v-for="campo in productoSeleccionado.especificaciones"
+          :key="campo.nombre"
+          class="mb-4"
+        >
+          <label :for="campo.nombre" class="block mb-1 font-medium text-sm text-gray-700">
+            {{ campo.nombre }}
+            <span v-if="campo.requerido" class="text-red-500 text-xs mt-1">*</span>
+          </label>
 
-    <div>
-      <label class="mb-1 block text-sm font-medium text-gray-700" for="estado">Estado</label>
-      <select
-        id="estado"
-        v-model="form.estado"
-        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        :class="{ 'border-red-500': errores.estado }"
-      >
-        <option v-for="op in estadosCotizacion" :key="op.value" :value="op.value">
-          {{ op.label }}
-        </option>
-      </select>
-      <p v-if="errores.estado" class="mt-1 text-xs text-red-600">{{ errores.estado }}</p>
+          <!-- Input de texto / email / number -->
+          <input
+            v-if="['text', 'number'].includes(campo.tipo)"
+            :type="campo.tipo"
+            :id="campo.nombre"
+            :name="campo.nombre"
+            v-model="formValues[campo.nombre]"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2"
+          />
+        </div>
+      </div>
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
