@@ -15,17 +15,39 @@ const estadoOpciones = [
   { value: 'inactivo', label: 'Inactivo' },
 ]
 
+const monedas = [
+  { value: 'MXN', label: 'MXN' },
+  { value: 'USD', label: 'USD' },
+  { value: 'EUR', label: 'EUR' },
+]
+
+const certificaciones = [
+  { value: 'ISO 9001:2015', label: 'ISO 9001:2015' },
+  { value: 'ISO 14001:2015', label: 'ISO 14001:2015' },
+  { value: 'ISO 22000:2015', label: 'ISO 22000:2015' },
+  { value: 'ISO 27001:2015', label: 'ISO 27001:2015' },
+  { value: 'ISO 31000:2015', label: 'ISO 31000:2015' },
+  { value: 'ISO 37001:2015', label: 'ISO 37001:2015' },
+  { value: 'ISO 45001:2015', label: 'ISO 45001:2015' },
+  { value: 'ISO 50001:2015', label: 'ISO 50001:2015' },
+  { value: 'ISO 55001:2015', label: 'ISO 55001:2015' },
+]
+
 const form = reactive({
   nombre: '',
   email: '',
   telefono: '',
   estado: 'activo',
+  moneda: 'MXN',
+  certificacion: '',
 })
 
 const errores = reactive({
   nombre: '',
   email: '',
   telefono: '',
+  moneda: '',
+  certificacion: '',
 })
 
 watch(
@@ -36,15 +58,21 @@ watch(
       form.email = cliente.email
       form.telefono = cliente.telefono
       form.estado = cliente.estado
+      form.moneda = cliente.moneda
+      form.certificacion = cliente.certificacion
     } else {
       form.nombre = ''
       form.email = ''
       form.telefono = ''
       form.estado = 'activo'
+      form.moneda = 'MXN'
+      form.certificacion = ''
     }
     errores.nombre = ''
     errores.email = ''
     errores.telefono = ''
+    errores.moneda = ''
+    errores.certificacion = ''
   },
   { immediate: true },
 )
@@ -55,6 +83,8 @@ function validar() {
   errores.nombre = ''
   errores.email = ''
   errores.telefono = ''
+  errores.moneda = ''
+  errores.certificacion = ''
 
   if (!form.nombre.trim()) {
     errores.nombre = 'El nombre es obligatorio.'
@@ -74,6 +104,16 @@ function validar() {
     valido = false
   }
 
+  if (!form.moneda) {
+    errores.moneda = 'Selecciona una moneda.'
+    valido = false
+  }
+
+  if (!form.certificacion) {
+    errores.certificacion = 'Selecciona una certificación.'
+    valido = false
+  }
+
   return valido
 }
 
@@ -84,6 +124,8 @@ function handleSubmit() {
     email: form.email.trim(),
     telefono: form.telefono.trim(),
     estado: form.estado,
+    moneda: form.moneda,
+    certificacion: form.certificacion,
   })
 }
 </script>
@@ -140,6 +182,38 @@ function handleSubmit() {
           {{ op.label }}
         </option>
       </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="moneda">Moneda</label>
+      <select
+        id="moneda"
+        v-model="form.moneda"
+        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option v-for="op in monedas" :key="op.value" :value="op.value">
+          {{ op.label }}
+        </option>
+      </select>
+      <p v-if="errores.moneda" class="mt-1 text-xs text-red-600">{{ errores.moneda }}</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="certificacion"
+        >Certificación</label
+      >
+      <select
+        id="certificacion"
+        v-model="form.certificacion"
+        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option v-for="op in certificaciones" :key="op.value" :value="op.value">
+          {{ op.label }}
+        </option>
+      </select>
+      <p v-if="errores.certificacion" class="mt-1 text-xs text-red-600">
+        {{ errores.certificacion }}
+      </p>
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
