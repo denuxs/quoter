@@ -18,8 +18,12 @@ const { productos } = useProductosLocalStorage()
 
 const estadosPermitidos = estadosCotizacion.map((e) => e.value)
 
-const clienteSeleccionado = computed(() =>
-  clientes.value.find((c) => c.id === form.clienteId) ?? null,
+const clienteSeleccionado = computed(
+  () => clientes.value.find((c) => c.id === form.clienteId) ?? null,
+)
+
+const productoSeleccionado = computed(
+  () => productos.value.find((p) => p.id === form.productoId) ?? null,
 )
 
 const hoy = new Date().toISOString().slice(0, 10)
@@ -155,7 +159,9 @@ function handleSubmit() {
         />
       </div>
       <div class="flex-1">
-        <label class="mb-1 block text-sm font-medium text-gray-500" for="certificacion">Certificación</label>
+        <label class="mb-1 block text-sm font-medium text-gray-500" for="certificacion"
+          >Certificación</label
+        >
         <input
           id="certificacion"
           :value="clienteSeleccionado.certificacion ?? '—'"
@@ -185,6 +191,10 @@ function handleSubmit() {
       <p v-if="productos.length === 0" class="mt-1 text-xs text-gray-500">
         No hay productos disponibles. Agrega productos primero.
       </p>
+    </div>
+
+    <div v-if="productoSeleccionado" class="flex gap-2">
+      {{ productoSeleccionado.especificaciones }}
     </div>
 
     <div>
