@@ -1,8 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { Form, Field, ErrorMessage } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import * as zod from 'zod'
+import { reactive, watch } from 'vue'
+
 import { estadosMaquina } from '@/composables/useMaquinasLocalStorage'
 
 const props = defineProps({
@@ -14,62 +12,80 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'cancel'])
 
-const initialValues = computed(() => ({
+const form = reactive({
   nombre: props.maquina?.nombre ?? '',
   estado: props.maquina?.estado ?? 'activo',
-}))
+})
 
-const validationSchema = toTypedSchema(
-  zod.object({
-    nombre: zod
-      .string({ required_error: 'Requerido' })
-      .min(1, { message: 'El nombre es requerido' })
-      .max(100, { message: 'Máximo 100 caracteres' }),
-    estado: zod.enum(['activo', 'inactivo'], { required_error: 'Requerido' }),
-  }),
+const errores = reactive({
+  nombre: '',
+  estado: '',
+})
+
+watch(
+  () => props.maquina,
+  (maquina) => {
+    if (maquina) {
+      form.nombre = maquina.nombre
+      form.estado = maquina.estado
+    } else {
+      form.nombre = ''
+      form.estado = 'activo'
+    }
+    errores.nombre = ''
+    errores.estado = ''
+  },
+  { immediate: true },
 )
 
-function handleSubmit(values) {
+function validar() {
+  errores.nombre = ''
+  errores.estado = ''
+  let valido = true
+
+  if (!form.nombre.trim()) {
+    errores.nombre = 'El nombre es obligatorio'
+    valido = false
+  }
+
+  return valido
+}
+
+function handleSubmit() {
+  if (!validar()) return
   emit('submit', {
-    nombre: values.nombre.trim(),
-    estado: values.estado,
+    nombre: form.nombre.trim(),
+    estado: form.estado,
   })
 }
 </script>
 
 <template>
-  <Form
-    :key="maquina?.id ?? 'nuevo'"
-    :validation-schema="validationSchema"
-    :initial-values="initialValues"
-    class="space-y-4"
-    @submit="handleSubmit"
-  >
+  <form :key="maquina?.id ?? 'nuevo'" class="space-y-4" @submit.prevent="handleSubmit">
     <div>
       <label class="mb-1 block text-sm font-medium text-gray-700" for="nombre">Nombre</label>
-      <Field
+      <input
         id="nombre"
-        name="nombre"
+        v-model="form.nombre"
         type="text"
         placeholder="Ej. Troqueladora, Prensa, CNC"
         class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       />
-      <ErrorMessage name="nombre" class="mt-1 text-xs text-red-600" as="p" />
+      <p v-if="errores.nombre" class="mt-1 text-xs text-red-600">{{ errores.nombre }}</p>
     </div>
 
     <div>
       <label class="mb-1 block text-sm font-medium text-gray-700" for="estado">Estado</label>
-      <Field
+      <select
         id="estado"
-        name="estado"
-        as="select"
+        v-model="form.estado"
         class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       >
         <option v-for="op in estadosMaquina" :key="op.value" :value="op.value">
           {{ op.label }}
         </option>
-      </Field>
-      <ErrorMessage name="estado" class="mt-1 text-xs text-red-600" as="p" />
+      </select>
+      <p v-if="errores.estado" class="mt-1 text-xs text-red-600">{{ errores.estado }}</p>
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
@@ -87,5 +103,5 @@ function handleSubmit(values) {
         {{ maquina ? 'Guardar cambios' : 'Crear máquina' }}
       </button>
     </div>
-  </Form>
+  </form>
 </template>
