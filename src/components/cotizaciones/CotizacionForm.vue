@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed } from 'vue'
 import { estadosCotizacion } from '@/composables/useCotizacionesLocalStorage'
 import { useClientesLocalStorageOptions } from '@/composables/useClientesLocalStorageOptions'
 import { useProductosLocalStorage } from '@/composables/useProductosLocalStorage'
@@ -17,6 +17,10 @@ const { clientes } = useClientesLocalStorageOptions()
 const { productos } = useProductosLocalStorage()
 
 const estadosPermitidos = estadosCotizacion.map((e) => e.value)
+
+const clienteSeleccionado = computed(() =>
+  clientes.value.find((c) => c.id === form.clienteId) ?? null,
+)
 
 const hoy = new Date().toISOString().slice(0, 10)
 
@@ -95,25 +99,27 @@ function handleSubmit() {
 
 <template>
   <form class="space-y-4" @submit.prevent="handleSubmit">
-    <div>
-      <label class="mb-1 block text-sm font-medium text-gray-700" for="codigo">Código</label>
-      <input
-        id="codigo"
-        v-model="form.codigo"
-        type="text"
-        placeholder="Ej. COT-001"
-        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      />
-    </div>
+    <div class="flex gap-2">
+      <div class="flex-1">
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="codigo">Código</label>
+        <input
+          id="codigo"
+          v-model="form.codigo"
+          type="text"
+          placeholder="Ej. COT-001"
+          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
 
-    <div>
-      <label class="mb-1 block text-sm font-medium text-gray-700" for="fecha">Fecha</label>
-      <input
-        id="fecha"
-        v-model="form.fecha"
-        type="date"
-        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      />
+      <div class="flex-1">
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="fecha">Fecha</label>
+        <input
+          id="fecha"
+          v-model="form.fecha"
+          type="date"
+          class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
     </div>
 
     <div>
@@ -135,6 +141,29 @@ function handleSubmit() {
       <p v-if="clientes.length === 0" class="mt-1 text-xs text-gray-500">
         No hay clientes disponibles. Agrega clientes primero.
       </p>
+    </div>
+
+    <div v-if="clienteSeleccionado" class="flex gap-2">
+      <div class="flex-1">
+        <label class="mb-1 block text-sm font-medium text-gray-500" for="moneda">Moneda</label>
+        <input
+          id="moneda"
+          :value="clienteSeleccionado.moneda ?? '—'"
+          type="text"
+          disabled
+          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
+        />
+      </div>
+      <div class="flex-1">
+        <label class="mb-1 block text-sm font-medium text-gray-500" for="certificacion">Certificación</label>
+        <input
+          id="certificacion"
+          :value="clienteSeleccionado.certificacion ?? '—'"
+          type="text"
+          disabled
+          class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm cursor-not-allowed"
+        />
+      </div>
     </div>
 
     <div>
