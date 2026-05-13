@@ -19,13 +19,15 @@ function guardarEnStorage(clientes) {
 export const useClientesStore = defineStore('clientes', () => {
   const clientes = ref(cargarDesdeStorage())
 
-  function createCliente({ nombre, email, telefono, estado = 'activo' }) {
+  function createCliente({ nombre, email, telefono, estado = 'activo', moneda, certificacion }) {
     const nuevoCliente = {
       id: crypto.randomUUID(),
       nombre,
       email,
       telefono,
       estado,
+      moneda,
+      certificacion,
     }
     clientes.value.push(nuevoCliente)
     guardarEnStorage(clientes.value)
