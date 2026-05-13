@@ -17,7 +17,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-2xl px-4 py-8">
+  <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Nuevo producto</h1>
     </div>

@@ -8,24 +8,13 @@ export const estadosProducto = [
   { value: 'rechazada', label: 'Rechazada' },
 ]
 
-const estadosPermitidos = estadosProducto.map((e) => e.value)
-
-function esProductoValido(p) {
-  return (
-    p &&
-    typeof p.id === 'string' &&
-    typeof p.nombre === 'string' &&
-    estadosPermitidos.includes(p.estado)
-  )
-}
-
 function cargarDesdeStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    return parsed.filter(esProductoValido)
+    return parsed
   } catch {
     return []
   }
@@ -38,11 +27,13 @@ function guardarEnStorage(productos) {
 export function useProductosLocalStorage() {
   const _productos = ref(cargarDesdeStorage())
 
-  function createProducto({ nombre, estado = 'enviada' }) {
+  function createProducto({ nombre, estado = 'enviada', precios = [], especificaciones = [] }) {
     const nuevoProducto = {
       id: crypto.randomUUID(),
       nombre: nombre.trim(),
       estado,
+      precios,
+      especificaciones,
     }
     _productos.value.push(nuevoProducto)
     guardarEnStorage(_productos.value)
